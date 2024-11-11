@@ -48,14 +48,8 @@ The script validates and handles the following errors:
 - **File Type Error**: Displays an error if the file type is unsupported.
 - **File Upload Error**: If no file is selected or an error occurs during the upload, an appropriate message is shown.
 
-## Screenshots
-
-![Screenshot of File Upload Form](path_to_screenshot.png)
 
 ## Contributing
 
 Contributions are welcome! Please feel free to submit a pull request or open an issue.
 
-## License
-
-This project is licensed under the MIT License.
