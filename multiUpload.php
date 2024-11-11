@@ -2,7 +2,14 @@
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $errors = [];
-    $upload_dir = $_SERVER['DOCUMENT_ROOT'] . '/uploded/';
+    $upload_dir = $_SERVER['DOCUMENT_ROOT'] . '/uploaded/';
+
+    // Check if the directory exists, if not create it
+    if (!is_dir($upload_dir)) {
+        mkdir($upload_dir, 0777, true);
+    }
+    
+    $all_files = [];
 
     // Retrieve uploaded file information
     $files = $_FILES['my-task'];
@@ -24,6 +31,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         $file_error = $file_errors[$i];
         $file_extension = strtolower(pathinfo($file_name, PATHINFO_EXTENSION));
 
+        // Generate a unique random name for each file
+        $new_file_name = rand(0, 1000) . "." . $file_extension;
+
         // Check for upload errors and file validation
         if ($file_error === UPLOAD_ERR_NO_FILE) {
             $errors[] = "<div class='error'>No file uploaded for file: $file_name.</div>";
@@ -33,8 +43,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $errors[] = "<div class='error'>Invalid file type for $file_name. Allowed types: jpg, jpeg, gif, png.</div>";
         } else {
             // If no errors, move file to the upload directory
-            if (move_uploaded_file($file_tmp, $upload_dir . $file_name)) {
-                echo "<div class='success'>File $file_name uploaded successfully!</div>";
+            if (move_uploaded_file($file_tmp, $upload_dir . $new_file_name)) {
+                echo "<div class='success'>File $file_name uploaded successfully! New Name: $new_file_name</div>";
+                $all_files[] = $new_file_name;
             } else {
                 $errors[] = "<div class='error'>Failed to upload $file_name.</div>";
             }
@@ -46,6 +57,12 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         foreach ($errors as $error) {
             echo $error;
         }
+    }
+
+    // Display all uploaded file names as a comma-separated string
+    if (!empty($all_files)) {
+        $file_field = implode(', ', $all_files);
+        echo "<div class='success'>Uploaded Files: $file_field</div>";
     }
 }
 
@@ -73,6 +90,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
 <!-- Upload Form -->
 <form action="" method="POST" enctype="multipart/form-data">
-    <input type="file" name="my-task[]" multiple="multiple"><br><br>
+    <input type="file" name="my-task[]" multiple><br><br>
     <input type="submit" name="submit" value="Upload"><br><br>
 </form>
