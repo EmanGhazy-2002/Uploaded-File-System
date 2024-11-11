@@ -1,5 +1,4 @@
 <?php
-
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $errors = [];
     $upload_dir = $_SERVER['DOCUMENT_ROOT'] . '/uploaded/';
@@ -8,9 +7,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     if (!is_dir($upload_dir)) {
         mkdir($upload_dir, 0777, true);
     }
-    
-    $all_files = [];
 
+    $all_files = [];
     // Retrieve uploaded file information
     $files = $_FILES['my-task'];
     $file_names = $files['name'];
@@ -36,60 +34,62 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
         // Check for upload errors and file validation
         if ($file_error === UPLOAD_ERR_NO_FILE) {
-            $errors[] = "<div class='error'>No file uploaded for file: $file_name.</div>";
+            $errors[] = "No file uploaded for file: $file_name.";
         } elseif ($file_size > $max_file_size) {
-            $errors[] = "<div class='error'>File $file_name is too large. Maximum size: $max_file_size bytes.</div>";
+            $errors[] = "File $file_name is too large. Maximum size: $max_file_size bytes.";
         } elseif (!in_array($file_extension, $allowed_extensions)) {
-            $errors[] = "<div class='error'>Invalid file type for $file_name. Allowed types: jpg, jpeg, gif, png.</div>";
+            $errors[] = "Invalid file type for $file_name. Allowed types: jpg, jpeg, gif, png.";
         } else {
             // If no errors, move file to the upload directory
             if (move_uploaded_file($file_tmp, $upload_dir . $new_file_name)) {
-                echo "<div class='success'>File $file_name uploaded successfully! New Name: $new_file_name</div>";
                 $all_files[] = $new_file_name;
             } else {
-                $errors[] = "<div class='error'>Failed to upload $file_name.</div>";
+                $errors[] = "Failed to upload $file_name.";
             }
         }
     }
 
-    // Display errors, if any
-    if (!empty($errors)) {
-        foreach ($errors as $error) {
-            echo $error;
-        }
-    }
-
-    // Display all uploaded file names as a comma-separated string
+    // Display results after form submission
     if (!empty($all_files)) {
         $file_field = implode(', ', $all_files);
-        echo "<div class='success'>Uploaded Files: $file_field</div>";
+        $status = 'success';
+        $message = "Files uploaded successfully!<br>Uploaded Files: $file_field";
+    } elseif (!empty($errors)) {
+        $status = 'error';
+        $message = "Error(s) occurred:<br>" . implode('<br>', $errors);
     }
 }
-
 ?>
 
-<!-- Simple CSS for styling the messages -->
-<style>
-    .error {
-        color: #d9534f;
-        background-color: #f2dede;
-        padding: 10px;
-        margin: 5px 0;
-        border: 1px solid #ebccd1;
-        border-radius: 5px;
-    }
-    .success {
-        color: #4cae4c;
-        background-color: #dff0d8;
-        padding: 10px;
-        margin: 5px 0;
-        border: 1px solid #d6e9c6;
-        border-radius: 5px;
-    }
-</style>
+<!-- Link the external CSS file -->
+<link rel="stylesheet" href="styles.css">
 
-<!-- Upload Form -->
-<form action="" method="POST" enctype="multipart/form-data">
-    <input type="file" name="my-task[]" multiple><br><br>
-    <input type="submit" name="submit" value="Upload"><br><br>
-</form>
+<!-- Upload Form and Result Message -->
+<div class="upload-container">
+    <h1>Upload Files</h1>
+    <!-- File Upload Form -->
+    <form action="" method="POST" enctype="multipart/form-data">
+        <div class="form-group">
+            <label for="files">Select Files:</label>
+            <input type="file" name="my-task[]" class="file-input" multiple><br><br>
+        </div>
+        <button type="submit" name="submit" class="submit-btn">Upload</button>
+    </form>
+
+    <!-- Display Result Message -->
+    <?php if (isset($status)): ?>
+        <div class="message <?php echo $status; ?>">
+            <?php echo $message; ?>
+        </div>
+    <?php endif; ?>
+
+    <!-- Display Errors -->
+    <?php if (!empty($errors)): ?>
+        <div class="message error">
+            <strong>Errors:</strong><br>
+            <?php foreach ($errors as $error): ?>
+                <?php echo $error; ?><br>
+            <?php endforeach; ?>
+        </div>
+    <?php endif; ?>
+</div>
